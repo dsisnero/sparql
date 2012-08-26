@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Sparql : Ruby SPARQL library" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Sparql</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/ruby-rdf/sparql">View on GitHub</a>
+
+          <h1 id="project_title">Sparql</h1>
+          <h2 id="project_tagline">Ruby SPARQL library</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/ruby-rdf/sparql/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/ruby-rdf/sparql/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>SPARQL for RDF.rb</h1>
+
+<p>This is a <a href="http://ruby-lang.org/">Ruby</a> implementation of <a href="http://en.wikipedia.org/wiki/SPARQL">SPARQL</a> for <a href="http://rdf.rubyforge.org/">RDF.rb</a>.</p>
+
+<h2>Features</h2>
+
+<ul>
+<li>100% free and unencumbered <a href="http://unlicense.org/">public domain</a> software.</li>
+<li>
+<a href="http://www.w3.org/TR/rdf-sparql-query/">SPARQL 1.0</a> query parsing and execution</li>
+<li>SPARQL results as <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">XML</a>, <a href="http://www.w3.org/TR/rdf-sparql-json-res/">JSON</a> or HTML.</li>
+<li>SPARQL CONSTRUCT or DESCRIBE serialized based on Format, Extension of Mime Type
+using available RDF Writers (see <a href="http://rubygems.org/gems/linkeddata">Linked Data</a>)</li>
+<li>SPARQL Client for accessing remote SPARQL endpoints.</li>
+<li>
+<a href="http://rack.rubyforge.org/">Rack</a> and <a href="http://www.sinatrarb.com/">Sinatra</a> middleware to perform <a href="http://en.wikipedia.org/wiki/Content_negotiation">HTTP content negotiation</a> for result formats
+
+<ul>
+<li>Compatible with any <a href="http://rack.rubyforge.org/">Rack</a> or <a href="http://www.sinatrarb.com/">Sinatra</a> application and any Rack-based framework.</li>
+<li>Helper method for describing <a href="http://www.w3.org/TR/sparql11-service-description/">SPARQL Service Description</a>
+</li>
+</ul>
+</li>
+<li>Compatible with Ruby 1.9.x.</li>
+<li>Compatible with older Ruby versions with the help of the <a href="http://rubygems.org/gems/backports">Backports</a> gem.</li>
+<li>Supports Unicode query strings both on Ruby 1.8.x and 1.9.x.</li>
+</ul><h2>Description</h2>
+
+<p>The {SPARQL} gem implements [SPARQL 1.0 Query] and provides <a href="http://rack.rubyforge.org/">Rack</a> and <a href="http://www.sinatrarb.com/">Sinatra</a>
+middleware to provide results using <a href="http://en.wikipedia.org/wiki/Content_negotiation">HTTP Content Negotiation</a>.</p>
+
+<ul>
+<li>{SPARQL::Grammar} implements a [SPARQL 1.0 Query] parser generating <a href="http://openjena.org/wiki/SSE">SPARQL S-Expressions (SSE)</a>.</li>
+<li>{SPARQL::Algebra} executes SSE against Any <code>RDF::Graph</code> or <code>RDF::Repository</code>, including
+compliant <a href="http://rdf.rubyforge.org/">RDF.rb</a> repository adaptors such as <a href="http://rubygems.org/gems/rdf-do">RDF::DO</a> and <a href="http://rubygems.org/gems/rdf-mongo">RDF::Mongo</a>.</li>
+<li>{Rack::SPARQL} and {Sinatra::SPARQL} provide middleware components to format results
+using an appropriate format based on <a href="http://en.wikipedia.org/wiki/Content_negotiation">HTTP content negotiation</a>.</li>
+</ul><h3>Middleware</h3>
+
+<p><code>Rack::SPARQL</code> is a superset of <a href="http://rubygems.org/gems/rack-linkeddata">Rack::LinkedData</a> to allow content negotiated results
+to be returned any <code>RDF::Enumerable</code> or <code>RDF::Query::Solutions</code> compatible results.
+You would typically return an instance of <code>RDF::Graph</code>, <code>RDF::Repository</code> or <code>RDF::Query::Solutions</code>
+from your Rack application, and let the <code>Rack::SPARQL::ContentNegotiation</code> middleware
+take care of serializing your response into whatever format the HTTP
+client requested and understands.</p>
+
+<p><code>Sinatra::SPARQL</code> is a thin Sinatra-specific wrapper around the
+{Rack::SPARQL} middleware, which implements SPARQL
+ content negotiation for Rack applications.</p>
+
+<p>The middleware queries <a href="http://rdf.rubyforge.org/">RDF.rb</a> for the MIME content types of known RDF
+serialization formats, so it will work with whatever serialization plugins
+that are currently available for RDF.rb. (At present, this includes support
+for N-Triples, N-Quads, Turtle, RDF/XML, RDF/JSON, JSON-LD, RDFa, TriG and TriX.)</p>
+
+<h3>Remote datasets</h3>
+
+<p>A SPARQL query containing <code>FROM</code> or <code>FROM NAMED</code> will load the referenced IRI unless the repository
+already contains a context with that same IRI. This is performed using <a href="http://rdf.rubyforge.org/">RDF.rb</a> <code>RDF::Util::File.open_file</code>
+passing HTTP Accept headers for various available RDF formats. For best results, require <a href="http://rubygems.org/gems/linkeddata">Linked Data</a> to enable
+a full set of RDF formats in the <code>GET</code> request. Also, consider overriding <code>RDF::Util::File.open_file</code> with
+an implementation with support for HTTP Get headers (such as <code>Net::HTTP</code>).</p>
+
+<h3>Result formats</h3>
+
+<p><code>SPARQL.serialize_results</code> may be used on it's own, or in conjunction with {Rack::SPARQL} or {Sinatra::SPARQL}
+to provide content-negotiated query results. For basic <code>SELECT</code> and <code>ASK</code> this includes HTML, XML and JSON formats.
+<code>DESCRIBE</code> and <code>CONSTRUCT</code> create an <code>RDF::Graph</code>, which can be serialized through <a href="http://en.wikipedia.org/wiki/Content_negotiation">HTTP Content Netogiation</a>
+using available RDF writers. For best results, require <a href="http://rubygems.org/gems/linkeddata">Linked Data</a> to enable
+a full set of RDF formats.</p>
+
+<h2>Examples</h2>
+
+<pre><code>require 'rubygems'
+require 'sparql'
+</code></pre>
+
+<h3>Executing a SPARQL query against a repository</h3>
+
+<pre><code>queryable = RDF::Repository.load("etc/doap.ttl")
+sse = SPARQL.parse("SELECT * WHERE { ?s ?p ?o }")
+sse.execute(queryable)
+</code></pre>
+
+<h3>Rendering solutions as JSON, XML or HTML</h3>
+
+<pre><code>queryable = RDF::Repository.load("etc/doap.ttl")
+solutions = SPARQL.execute("SELECT * WHERE { ?s ?p ?o }", queryable)
+solutions.to_json #to_xml #to_html
+</code></pre>
+
+<h3>Parsing a SPARQL query string to SSE</h3>
+
+<pre><code>sse = SPARQL.parse("SELECT * WHERE { ?s ?p ?o }")
+sse.to_sxp
+</code></pre>
+
+<h3>Command line processing</h3>
+
+<pre><code>sparql --default-graph etc/doap.ttl etc/from_default.rq
+sparql -e "SELECT * FROM &lt;etc/doap.ttl&gt; WHERE { ?s ?p ?o }"
+
+# Generate SPARQL Algebra Expression (SSE) format
+sparql --to-sse etc/input.rq
+sparql --to-sse -e "SELECT * WHERE { ?s ?p ?o }"
+
+# Run query using SSE input
+sparql --default-graph etc/doap.ttl --sse etc/input.sse
+sparql --sse -e "(dataset (&lt;etc/doap.ttl&gt;) (bgp (triple ?s ?p ?o))))"
+</code></pre>
+
+<h3>Adding SPARQL content negotiation to a Rails 3.x application</h3>
+
+<pre><code># config/application.rb
+require 'rack/sparql'
+
+class Application &lt; Rails::Application
+  config.middleware.use Rack::SPARQL::ContentNegotiation
+end
+</code></pre>
+
+<h3>Adding SPARQL content negotiation to a Rackup application</h3>
+
+<pre><code>#!/usr/bin/env rackup
+require 'rack/sparql'
+
+repository = RDF::Repository.new do |graph|
+  graph &lt;&lt; [RDF::Node.new, RDF::DC.title, "Hello, world!"]
+end
+results = SPARQL.execute("SELECT * WHERE { ?s ?p ?o }", repository)
+
+use Rack::SPARQL::ContentNegotiation
+run lambda { |env| [200, {}, results] }
+</code></pre>
+
+<h3>Adding SPARQL content negotiation to a classic Sinatra application</h3>
+
+<pre><code># Sinatra example
+#
+# Call as http://localhost:4567/sparql?query=uri,
+# where `uri` is the URI of a SPARQL query, or
+# a URI-escaped SPARQL query, for example:
+#   http://localhost:4567/?query=SELECT%20?s%20?p%20?o%20WHERE%20%7B?s%20?p%20?o%7D
+require 'sinatra'
+require 'sinatra/sparql'
+require 'uri'
+
+get '/' do
+settings.sparql_options.replace(:standard_prefixes =&gt; true)
+  repository = RDF::Repository.new do |graph|
+    graph &lt;&lt; [RDF::Node.new, RDF::DC.title, "Hello, world!"]
+  end
+  if params["query"]
+    query = params["query"].to_s.match(/^http:/) ? RDF::Util::File.open_file(params["query"]) : ::URI.decode(params["query"].to_s)
+    SPARQL.execute(query, repository)
+  else
+    settings.sparql_options.merge!(:prefixes =&gt; {
+      :ssd =&gt; "http://www.w3.org/ns/sparql-service-description#",
+      :void =&gt; "http://rdfs.org/ns/void#"
+    })
+    service_description(:repo =&gt; repository)
+  end
+end
+</code></pre>
+
+<h2>Documentation</h2>
+
+<p>Full documentation available on <a href="http://rubydoc.info/github/ruby-rdf/sparql/frames">Rubydoc.info</a></p>
+
+<h3>Principle Classes</h3>
+
+<ul>
+<li>{SPARQL}
+
+<ul>
+<li>{SPARQL::Algebra}</li>
+<li>{SPARQL::Algebra::Expression}</li>
+<li>{SPARQL::Algebra::Query}</li>
+<li>{SPARQL::Algebra::Operator}</li>
+<li>{SPARQL::Grammar}</li>
+<li>{SPARQL::Grammar::Parser}</li>
+<li>{SPARQL::Grammar::Lexer}</li>
+</ul>
+</li>
+<li>{Sinatra::SPARQL}</li>
+<li>{Rack::SPARQL}
+
+<ul>
+<li>{Rack::SPARQL::ContentNegotiation}</li>
+</ul>
+</li>
+</ul><h2>Dependencies</h2>
+
+<ul>
+<li>
+<a href="http://ruby-lang.org/">Ruby</a> (&gt;= 1.9) or (&gt;= 1.8.1 with <a href="http://rubygems.org/gems/backports">Backports</a>)</li>
+<li>
+<a href="http://rubygems.org/gems/rdf">RDF.rb</a> (&gt;= 0.3.5)</li>
+<li>
+<a href="https://rubygems.org/gems/sparql-client">SPARQL::Client</a> (&gt;= 0.0.11)</li>
+<li>
+<a href="https://rubygems.org/gems/sxp">SXP</a> (&gt;= 0.0.15)</li>
+<li>
+<a href="https://rubygems.org/gems/builder">Builder</a> (&gt;= 3.0.0)</li>
+<li>
+<a href="https://rubygems.org/gems/json">JSON</a> (&gt;= 1.5.1)</li>
+<li>Soft dependency on <a href="http://rubygems.org/gems/linkeddata">Linked Data</a> (&gt;= 0.3.5)</li>
+<li>Soft dependency on <a href="http://rubygems.org/gems/nokogiri">Nokogiri</a> (&gt;= 1.3.3)
+Falls back to REXML for XML parsing Builder for XML serializing. Nokogiri is much more efficient</li>
+<li>Soft dependency on <a href="https://rubygems.org/gems/equivalent-xml">Equivalent XML</a> (&gt;= 0.2.9)
+Equivalent XML performs more efficient comparisons of XML Literals when Nokogiri is included</li>
+<li>Soft dependency on <a href="http://rack.rubyforge.org/">Rack</a> (&gt;= 1.3.2)</li>
+<li>Soft dependency on <a href="http://www.sinatrarb.com/">Sinatra</a> (&gt;= 1.4.1)</li>
+</ul><h2>Installation</h2>
+
+<p>The recommended installation method is via <a href="http://rubygems.org/">RubyGems</a>.
+To install the latest official release of the <code>SPARQL</code> gem, do:</p>
+
+<pre><code>% [sudo] gem install sparql
+</code></pre>
+
+<h2>Download</h2>
+
+<p>To get a local working copy of the development repository, do:</p>
+
+<pre><code>% git clone git://github.com/ruby-rdf/sparql.git
+</code></pre>
+
+<h2>Mailing List</h2>
+
+<ul>
+<li><a href="http://lists.w3.org/Archives/Public/public-rdf-ruby/">http://lists.w3.org/Archives/Public/public-rdf-ruby/</a></li>
+</ul><h2>Authors</h2>
+
+<ul>
+<li>
+<a href="http://github.com/gkellogg">Gregg Kellogg</a> - <a href="http://greggkellogg.net/">http://greggkellogg.net/</a>
+</li>
+<li>
+<a href="http://github.com/bendiken">Arto Bendiken</a> - <a href="http://ar.to/">http://ar.to/</a>
+</li>
+<li>
+<a href="http://github.com/pius">Pius Uzamere</a> - <a href="http://pius.me/">http://pius.me/</a>
+</li>
+</ul><h2>Contributing</h2>
+
+<ul>
+<li>Do your best to adhere to the existing coding conventions and idioms.</li>
+<li>Don't use hard tabs, and don't leave trailing whitespace on any line.</li>
+<li>Do document every method you add using <a href="http://yardoc.org/">YARD</a> annotations. Read the
+<a href="http://rubydoc.info/docs/yard/file/docs/GettingStarted.md">tutorial</a> or just look at the existing code for examples.</li>
+<li>Don't touch the <code>.gemspec</code>, <code>VERSION</code> or <code>AUTHORS</code> files. If you need to
+change them, do so on your private branch only.</li>
+<li>Do feel free to add yourself to the <code>CREDITS</code> file and the corresponding
+list in the the <code>README</code>. Alphabetical order applies.</li>
+<li>Do note that in order for us to merge any non-trivial changes (as a rule
+of thumb, additions larger than about 15 lines of code), we need an
+explicit <a href="http://unlicense.org/#unlicensing-contributions">public domain dedication</a> on record from you.</li>
+</ul><h2>License</h2>
+
+<p>This is free and unencumbered public domain software. For more information,
+see <a href="http://unlicense.org/">http://unlicense.org/</a> or the accompanying {file:UNLICENSE} file.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Sparql maintained by <a href="https://github.com/ruby-rdf">ruby-rdf</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
