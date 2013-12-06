@@ -123,6 +123,13 @@ will be in later release along with:</p>
 </ul><p>either in this, or related gems.</p>
 
 <h3>
+<a name="updates-for-rdf-11" class="anchor" href="#updates-for-rdf-11"><span class="octicon octicon-link"></span></a>Updates for RDF 1.1</h3>
+
+<p>Starting with version 1.1.2, the SPARQL gem uses the 1.1 version of the <a href="http://rdf.rubyforge.org/">RDF.rb</a>, which adheres to <a href="http://www.w3.org/TR/rdf11-concepts/">RDF 1.1 Concepts</a> rather than <a href="http://www.w3.org/TR/rdf-concepts/">RDF 1.0</a>. The main difference is that there is now no difference between a <em>Simple Literal</em> (a literal with no datatype or language) and a Literal with datatype <em>xsd:string</em>; this causes some minor differences in the way in which queries are understood, and when expecting different results.</p>
+
+<p>Additionally, queries now take a block, or return an <code>Enumerator</code>; this is in keeping with much of the behavior of <a href="http://rdf.rubyforge.org/">RDF.rb</a> methods, including <code>Queryable#query</code>, and with version 1.1 or <a href="http://rdf.rubyforge.org/">RDF.rb</a>, Query#execute. As a consequence, all queries which used to be of the form <code>query.execute(repository)</code> may equally be called as <code>repository.query(query)</code>. Previously, results were returned as a concrete class implementing <code>RDF::Queryable</code> or <code>RDF::Query::Solutions</code>, these are now <code>Enumerators</code>.</p>
+
+<h3>
 <a name="sparql-extension-functions" class="anchor" href="#sparql-extension-functions"><span class="octicon octicon-link"></span></a>SPARQL Extension Functions</h3>
 
 <p>Extension functions may be defined, which will be invoked during query evaluation. For example:</p>
@@ -152,8 +159,8 @@ SELECT ?crypted
 <a name="middleware" class="anchor" href="#middleware"><span class="octicon octicon-link"></span></a>Middleware</h3>
 
 <p>{Rack::SPARQL} is a superset of <a href="http://rubygems.org/gems/rack-linkeddata">Rack::LinkedData</a> to allow content negotiated results
-to be returned any <code>RDF::Enumerable</code> or <code>RDF::Query::Solutions</code> compatible results.
-You would typically return an instance of <code>RDF::Graph</code>, <code>RDF::Repository</code> or <code>RDF::Query::Solutions</code>
+to be returned any <code>RDF::Enumerable</code> or an enumerator extended with <code>RDF::Query::Solutions</code> compatible results.
+You would typically return an instance of <code>RDF::Graph</code>, <code>RDF::Repository</code> or an enumerator extended with <code>RDF::Query::Solutions</code>
 from your Rack application, and let the <code>Rack::SPARQL::ContentNegotiation</code> middleware
 take care of serializing your response into whatever format the HTTP
 client requested and understands.</p>
@@ -196,11 +203,23 @@ require 'sparql'
 </code></pre>
 
 <h3>
+<a name="querying-a-repository-with-a-sparql-query" class="anchor" href="#querying-a-repository-with-a-sparql-query"><span class="octicon octicon-link"></span></a>Querying a repository with a SPARQL query</h3>
+
+<pre><code>queryable = RDF::Repository.load("etc/doap.ttl")
+sse = SPARQL.parse("SELECT * WHERE { ?s ?p ?o }")
+queryable.query(sse) do |result|
+  result.inspect
+end
+</code></pre>
+
+<h3>
 <a name="executing-a-sparql-query-against-a-repository" class="anchor" href="#executing-a-sparql-query-against-a-repository"><span class="octicon octicon-link"></span></a>Executing a SPARQL query against a repository</h3>
 
 <pre><code>queryable = RDF::Repository.load("etc/doap.ttl")
 sse = SPARQL.parse("SELECT * WHERE { ?s ?p ?o }")
-sse.execute(queryable)
+sse.execute(queryable) do |result|
+  result.inspect
+end
 </code></pre>
 
 <h3>
@@ -304,12 +323,20 @@ end
 <li>{SPARQL}
 
 <ul>
-<li>{SPARQL::Algebra}</li>
+<li>{SPARQL::Algebra}
+
+<ul>
 <li>{SPARQL::Algebra::Expression}</li>
 <li>{SPARQL::Algebra::Query}</li>
 <li>{SPARQL::Algebra::Operator}</li>
-<li>{SPARQL::Grammar}</li>
+</ul>
+</li>
+<li>{SPARQL::Grammar}
+
+<ul>
 <li>{SPARQL::Grammar::Parser}</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>{Sinatra::SPARQL}</li>
@@ -380,6 +407,8 @@ To install the latest official release of the <code>SPARQL</code> gem, do:</p>
 </ul><h2>
 <a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
 
+<p>This repository uses <a href="https://github.com/nvie/gitflow">Git Flow</a> to mange development and release activity. All submissions <em>must</em> be on a feature branch based on the <em>develop</em> branch to ease staging and integration.</p>
+
 <ul>
 <li>Do your best to adhere to the existing coding conventions and idioms.</li>
 <li>Don't use hard tabs, and don't leave trailing whitespace on any line.</li>
@@ -398,7 +427,9 @@ explicit <a href="http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/00
 <p>This is free and unencumbered public domain software. For more information,
 see <a href="http://unlicense.org/">http://unlicense.org/</a> or the accompanying {file:UNLICENSE} file.</p>
 
-<p>A copy of the <a href="http://www.w3.org/2001/sw/DataAccess/tests/">SPARQL 1.0 tests</a> and <a href="http://www.w3.org/2009/sparql/docs/tests/">SPARQL 1.1 tests</a> are included in the repository, which are not covered under the UNLICENSE; see the references for test copyright information.</p>
+<p>A copy of the <a href="http://www.w3.org/TR/sparql11-query/#sparqlGrammar">SPARQL EBNF</a> and derived parser files are included in the repository, which are not covered under the UNLICENSE. These files are covered via the <a href="http://www.w3.org/Consortium/Legal/2002/copyright-documents-20021231">W3C Document License</a>.</p>
+
+<p>A copy of the <a href="http://www.w3.org/2001/sw/DataAccess/tests/">SPARQL 1.0 tests</a> and <a href="http://www.w3.org/2009/sparql/docs/tests/">SPARQL 1.1 tests</a> are also included in the repository, which are not covered under the UNLICENSE; see the references for test copyright information.</p>
       </section>
     </div>
 
